@@ -1,0 +1,146 @@
+---
+title: "Homework 3"
+output: html_notebook
+---
+Ravil Bikmetov
+Ved Paranjape
+
+#Exercises
+2. Table 5.10 contains information on the mean duration of customer service calls between a training and a test data set. Test whether the partition is valid for this variable, using 𝛼 = 0.10.
+```{r}
+xbar1 = 20.5
+xbar2 = 20.4
+s1 = 5.2
+s2 = 4.9
+n1 = 2000
+n2 = 600
+```
+Make the degree of freedom the minimum of the two sample sized = min(n-1,n2-1)
+```{r}
+degree <- min(n-1,n2-1)
+```
+Calculate the test statistics 
+```{r}
+tdata <- (xbar1 - xbar2) / sqrt((s1**2/n1)+(s2**2/n2))
+tdata
+```
+Calculate p-value
+```{r}
+pvalue <- 2*pt(tdata, df = degree, lower.tail=FALSE)
+pvalue
+```
+The two-tailed p-value for tdata = 0.4321 is:
+p-value = 2 ⋅ P(t > 0.4321) = 0.6675
+Since the p-value is large, there is no evidence that the mean number of customer service calls differs between the training data set and the test data set. For this variable, the partition seems valid.
+
+
+4.Table 5.11 contains the counts for the marital status variable for the training and test set data. Test whether the partition is valid for this variable, using 𝛼 = 0.10.
+
+Chi-Square Test for Homogeneity of Proportions
+```{r}
+table5.11 <- as.table(rbind(c(800,750,450),c(240,250,110))) 
+#dimnames(table5.11) <- list(Data.Set = c("Training Set", "Test Set"),Status = c("Married", "Single", "Other"))
+dimnames(table5.11) <- list(Data.Set = c("Training Set","Test Set"), Status = c("Married","Single","Other"))
+Xsq_data <- chisq.test(table5.11)
+Xsq_data
+```
+p-value, expected frequencies,Xsq_data$statistic
+```{r}
+Xsq_data$p.value
+Xsq_data$expected
+```
+The two-tailed p-value for Chi-square = 5.8036 is:
+p-value = 2 ⋅ P(X-sq > 5.8036) = 0.05492505
+Because this p-value is small, there is evidence that the observed frequencies represent proportions that are signi cantly different for the training and test data sets. In other words, for this variable, the partition is not valid.
+
+5. The multinomial variable payment preference takes the values credit card,debitcard,and check. Now, suppose we know that 50% of the customers in our population prefer to pay by credit card, 20% prefer debit card, and 30% prefer to pay by check. We have taken a sample from our population, and would like to determine whether it is representative of the population. The sample of size 200 shows 125 customers preferring to pay by credit card, 25 by debit card, and 50 by check. Test whether the sample is representative of the population, using 𝛼 = 0.05.
+
+Chi-Square Goodness of Fit of Multinomial Data
+```{r}
+proportions<- c(0.5, 0.2, 0.3)
+```
+Observed frequencies
+```{r}
+sample <- c(125, 25, 50)
+chisq.test(sample, p = proportions)
+```
+The two-tailed p-value for Chi-square = 13.542 is:
+p-value = 2 ⋅ P(X-sq > 5.8036) = 0.001147
+Thus, there is evidence that the observed frequencies represent proportions that differ signicantly from those in the null hypothesis. In other words, our sample is not representative of the population.
+
+
+7.Table 5.12 contains the amount spent (in dollars) in a random sample of purchases where the payment was made by credit card, debit card, and check, respectively. Test whether the population mean amount spent differs among the three groups, using 𝛼 = 0.05.
+
+```{r}
+a <- c(100, 110, 90, 100)
+b <- c(80, 120, 90, 110)
+c <- c(50, 70, 80, 80)
+ab <- append(a,b)
+datavalues <- append(ab, c)
+datalabels <- factor(c(rep("a", length(a)),
+              rep("b", length(b)),
+              rep("c", length(c))))
+#anova.results <- aov(datavalues ~ datalabels) 
+anova.results <- aov(datavalues ~ datalabels)
+summary(anova.results)
+```
+The p-value of 0.0221 indicates that there is evidence against the null hypothesis that all population means are equal. 
+
+#Hands-on-Analysis
+```{r}
+cereals <- read.csv("Cereals.CSV")
+fiber <- cereals$Fiber
+rating <- cereals$Rating
+```
+Regression Model training
+```{r}
+lm.out <- lm(rating ~ fiber)
+plot(fiber,
+rating,
+main = "Cereal Rating by Fiber", xlab = "Fiber",ylab = "Rating")
+abline(lm.out)
+```
+Intercept and slope
+```{r}
+lm.out
+```
+
+
+11. What is the estimated regression equation?
+Let the varible rating be representd by y which has to be predicted with fiber which is represented by x.
+The estimated regression equation is as follows:
+y = b0 + b1*x + e
+Where b1 is the slope of the regression line and b0 is the y-intercept of the line. These two parameters are fitted in the regression model. e is a random variable for modelling the errors.
+For the values of the slope and intercept calculated above,
+rating = 35.257 + 3.443 * fiber
+
+15. How closely does our model fit the data? Which statistic are you using to measure this?
+
+We would be using r-square for determining how well our model fits the data.
+```{r}
+summary(lm.out)
+```
+The r-square value is 0.3412 or 34.12%. Thus, 34.12% variability in rating is accounted for by the linear relationship between rating and fiber without looking at the other variables. Thus, we can say that our model fits the data well.
+
+16. Find a point estimate for the rating for a cereal with a  ber content of 3 grams.
+
+We have the estimation equation as 
+rating = 35.257 + 3.443 * fiber
+
+substituting the value of fiber(x) as 3,
+```{r}
+rating_estimate = 35.257 + (3.443 * 3)
+rating_estimate
+```
+The point estimate for rating is 45.586.
+
+18. Find a 95% prediction interval for a randomly chosen cereal with a fiber content of 3 grams.
+
+Prediction interval using Regression output
+```{r}
+pred.prediction <- predict(lm.out, data.frame(fiber = 3), interval = "prediction") 
+pred.prediction
+```
+Prediction interval is 22.55513 to 68.61593.
+
+
